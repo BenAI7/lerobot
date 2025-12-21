@@ -126,12 +126,51 @@ class OpenCVCamera(Camera):
         self.new_frame_event: Event = Event()
 
         self.rotation: int | None = get_cv2_rotation(config.rotation)
-        self.backend: int = get_cv2_backend()
+        self.backend: int = self._resolve_backend(config.backend)
 
         if self.height and self.width:
             self.capture_width, self.capture_height = self.width, self.height
             if self.rotation in [cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_90_COUNTERCLOCKWISE]:
                 self.capture_width, self.capture_height = self.height, self.width
+
+    @staticmethod
+    def _resolve_backend(backend: str | int | None) -> int:
+        """
+        Resolve an OpenCV VideoCapture backend from config.
+
+        Supports:
+        - None: choose a platform default via get_cv2_backend()
+        - int: treated as a cv2 CAP_* constant
+        - str: "MSMF", "DSHOW", "ANY", "AUTO" (case-insensitive), optionally prefixed with "CAP_"
+        """
+        if backend is None:
+            return get_cv2_backend()
+
+        if isinstance(backend, int):
+            return int(backend)
+
+        name = backend.strip().upper()
+        if name.startswith("CAP_"):
+            name = name.removeprefix("CAP_")
+
+        mapping: dict[str, int] = {
+            "AUTO": int(cv2.CAP_ANY),
+            "ANY": int(cv2.CAP_ANY),
+            "DEFAULT": int(cv2.CAP_ANY),
+        }
+
+        # Only add backends that exist in the current OpenCV build.
+        if hasattr(cv2, "CAP_MSMF"):
+            mapping["MSMF"] = int(cv2.CAP_MSMF)
+        if hasattr(cv2, "CAP_DSHOW"):
+            mapping["DSHOW"] = int(cv2.CAP_DSHOW)
+
+        if name not in mapping:
+            raise ValueError(
+                f"Unsupported OpenCV backend '{backend}'. Use one of: {sorted(mapping.keys())} or an int cv2.CAP_* value."
+            )
+
+        return mapping[name]
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}({self.index_or_path})"
@@ -160,21 +199,64 @@ class OpenCVCamera(Camera):
         # blocking in multi-threaded applications, especially during data collection.
         cv2.setNumThreads(1)
 
-        self.videocapture = cv2.VideoCapture(self.index_or_path, self.backend)
+        # On Windows, camera drivers + OpenCV sometimes behave differently across backends.
+        # Try a small set of candidates if config didn't explicitly force one.
+        backend_candidates: list[int]
+        if platform.system() == "Windows" and self.config.backend is None:
+            backend_candidates = []
+            if hasattr(cv2, "CAP_MSMF"):
+                backend_candidates.append(int(cv2.CAP_MSMF))
+            if hasattr(cv2, "CAP_DSHOW"):
+                backend_candidates.append(int(cv2.CAP_DSHOW))
+            backend_candidates.append(int(cv2.CAP_ANY))
+        else:
+            backend_candidates = [self.backend]
 
-        if not self.videocapture.isOpened():
-            self.videocapture.release()
-            self.videocapture = None
+        last_error: Exception | None = None
+        for backend in backend_candidates:
+            self.backend = int(backend)
+            self.videocapture = cv2.VideoCapture(self.index_or_path, self.backend)
+
+            if not self.videocapture.isOpened():
+                self.videocapture.release()
+                self.videocapture = None
+                last_error = ConnectionError(
+                    f"Failed to open {self} with backend={self.backend}. "
+                    f"Run `lerobot-find-cameras opencv` to find available cameras."
+                )
+                continue
+
+            try:
+                self._configure_capture_settings()
+            except Exception as e:
+                # On Windows, some drivers don't allow exact fps/size settings via OpenCV.
+                # Try another backend before giving up.
+                last_error = e
+                try:
+                    self.videocapture.release()
+                finally:
+                    self.videocapture = None
+                continue
+
+            # Success.
+            break
+
+        if self.videocapture is None or not self.videocapture.isOpened():
             raise ConnectionError(
-                f"Failed to open {self}.Run `lerobot-find-cameras opencv` to find available cameras."
+                f"Failed to open/configure {self}. "
+                f"Last error: {last_error}. "
+                f"Run `lerobot-find-cameras opencv` to find available cameras."
             )
-
-        self._configure_capture_settings()
 
         if warmup:
             start_time = time.time()
             while time.time() - start_time < self.warmup_s:
-                self.read()
+                # Seed the async pipeline with an initial frame so downstream code
+                # can call async_read() immediately without hitting a first-frame timeout.
+                frame = self.read()
+                with self.frame_lock:
+                    self.latest_frame = frame
+                self.new_frame_event.set()
                 time.sleep(0.1)
 
         logger.info(f"{self} connected.")
@@ -225,6 +307,13 @@ class OpenCVCamera(Camera):
         else:
             self._validate_fps()
 
+        # Persist the actual negotiated settings back into the config so downstream code
+        # (e.g. dataset feature shapes) can reflect the true output size/FPS.
+        # Note: self.width/self.height represent the post-rotation output dimensions.
+        self.config.width = self.width
+        self.config.height = self.height
+        self.config.fps = int(self.fps) if self.fps is not None else None
+
     def _validate_fps(self) -> None:
         """Validates and sets the camera's frames per second (FPS)."""
 
@@ -237,7 +326,15 @@ class OpenCVCamera(Camera):
         success = self.videocapture.set(cv2.CAP_PROP_FPS, float(self.fps))
         actual_fps = self.videocapture.get(cv2.CAP_PROP_FPS)
         # Use math.isclose for robust float comparison
-        if not success or not math.isclose(self.fps, actual_fps, rel_tol=1e-3):
+        if not success or (actual_fps is None) or (actual_fps == 0) or (not math.isclose(self.fps, actual_fps, rel_tol=1e-3)):
+            if platform.system() == "Windows":
+                logger.warning(
+                    f"{self} could not set fps={self.fps} via OpenCV (actual_fps={actual_fps}, success={success}). "
+                    f"Continuing with camera-reported value."
+                )
+                if actual_fps not in (None, 0):
+                    self.fps = int(round(actual_fps))
+                return
             raise RuntimeError(f"{self} failed to set fps={self.fps} ({actual_fps=}).")
 
     def _validate_fourcc(self) -> None:
@@ -274,16 +371,36 @@ class OpenCVCamera(Camera):
         height_success = self.videocapture.set(cv2.CAP_PROP_FRAME_HEIGHT, float(self.capture_height))
 
         actual_width = int(round(self.videocapture.get(cv2.CAP_PROP_FRAME_WIDTH)))
-        if not width_success or self.capture_width != actual_width:
-            raise RuntimeError(
-                f"{self} failed to set capture_width={self.capture_width} ({actual_width=}, {width_success=})."
-            )
+        if (not width_success) or (self.capture_width != actual_width):
+            if platform.system() == "Windows":
+                logger.warning(
+                    f"{self} could not set capture_width={self.capture_width} (actual_width={actual_width}, success={width_success}). "
+                    f"Continuing with actual_width."
+                )
+                self.capture_width = actual_width
+            else:
+                raise RuntimeError(
+                    f"{self} failed to set capture_width={self.capture_width} ({actual_width=}, {width_success=})."
+                )
 
         actual_height = int(round(self.videocapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-        if not height_success or self.capture_height != actual_height:
-            raise RuntimeError(
-                f"{self} failed to set capture_height={self.capture_height} ({actual_height=}, {height_success=})."
-            )
+        if (not height_success) or (self.capture_height != actual_height):
+            if platform.system() == "Windows":
+                logger.warning(
+                    f"{self} could not set capture_height={self.capture_height} (actual_height={actual_height}, success={height_success}). "
+                    f"Continuing with actual_height."
+                )
+                self.capture_height = actual_height
+            else:
+                raise RuntimeError(
+                    f"{self} failed to set capture_height={self.capture_height} ({actual_height=}, {height_success=})."
+                )
+
+        # Keep (width,height) in sync with capture dims and rotation so post-processing checks match reality.
+        if self.rotation in [cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_90_COUNTERCLOCKWISE]:
+            self.width, self.height = self.capture_height, self.capture_width
+        else:
+            self.width, self.height = self.capture_width, self.capture_height
 
     @staticmethod
     def find_cameras() -> list[dict[str, Any]]:
@@ -308,7 +425,11 @@ class OpenCVCamera(Camera):
             targets_to_scan = [int(i) for i in range(MAX_OPENCV_INDEX)]
 
         for target in targets_to_scan:
-            camera = cv2.VideoCapture(target)
+            # Use a platform default backend for more reliable discovery (esp. Windows).
+            try:
+                camera = cv2.VideoCapture(target, get_cv2_backend())
+            except Exception:
+                camera = cv2.VideoCapture(target)
             if camera.isOpened():
                 default_width = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH))
                 default_height = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -502,12 +623,29 @@ class OpenCVCamera(Camera):
         if self.thread is None or not self.thread.is_alive():
             self._start_read_thread()
 
+        # Fast path: if we already have a frame and no new frame is pending, return immediately.
+        # This prevents the control loop from blocking on camera timing jitter.
+        with self.frame_lock:
+            cached = self.latest_frame
+        if cached is not None and not self.new_frame_event.is_set():
+            return cached
+
+        # Otherwise, wait for a new frame up to timeout_ms.
         if not self.new_frame_event.wait(timeout=timeout_ms / 1000.0):
-            thread_alive = self.thread is not None and self.thread.is_alive()
-            raise TimeoutError(
-                f"Timed out waiting for frame from camera {self} after {timeout_ms} ms. "
-                f"Read thread alive: {thread_alive}."
-            )
+            # If we have *any* cached frame, return it rather than crashing the caller.
+            with self.frame_lock:
+                cached_after_timeout = self.latest_frame
+            if cached_after_timeout is not None:
+                logger.debug(
+                    f"{self} async_read timed out after {timeout_ms}ms; returning last cached frame instead."
+                )
+                return cached_after_timeout
+
+            # Last resort: do a blocking read once.
+            frame_sync = self.read()
+            with self.frame_lock:
+                self.latest_frame = frame_sync
+            return frame_sync
 
         with self.frame_lock:
             frame = self.latest_frame

@@ -74,3 +74,53 @@ def get_cv2_backend() -> int:
     #     return cv2.CAP_AVFOUNDATION
     else:  # Linux and others
         return int(cv2.CAP_ANY)
+
+
+def packed_stereo_split_shapes(height: int, width: int, mode: str) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+    """
+    Given a packed stereo frame shape (H, W, 3), return shapes for (left, right) images.
+
+    Supported modes:
+    - "side_by_side" (aliases: "sbs", "lr")
+    - "top_bottom" (aliases: "tb", "ud")
+    """
+    m = mode.strip().lower()
+    if m in ("side_by_side", "sbs", "lr"):
+        if width % 2 != 0:
+            raise ValueError(f"packed stereo width must be even for side_by_side split, got {width=}")
+        return (height, width // 2, 3), (height, width // 2, 3)
+    if m in ("top_bottom", "tb", "ud"):
+        if height % 2 != 0:
+            raise ValueError(f"packed stereo height must be even for top_bottom split, got {height=}")
+        return (height // 2, width, 3), (height // 2, width, 3)
+    raise ValueError(f"Unsupported packed stereo split mode: {mode!r}")
+
+
+def split_packed_stereo_frame(frame, mode: str):
+    """
+    Split a packed stereo RGB frame into (left, right) frames.
+
+    `frame` is expected to be a NumPy array shaped (H, W, 3).
+    """
+    # Lazy import: numpy is a heavy dependency but already required by cameras.
+    import numpy as np  # type: ignore
+
+    if not isinstance(frame, np.ndarray) or frame.ndim != 3:
+        raise ValueError(f"Expected packed stereo frame as np.ndarray with shape (H, W, C); got {type(frame)=}, {getattr(frame, 'shape', None)=}")
+    h, w, c = frame.shape
+    if c != 3:
+        raise ValueError(f"Expected 3-channel packed stereo frame; got {c=}")
+
+    m = mode.strip().lower()
+    if m in ("side_by_side", "sbs", "lr"):
+        if w % 2 != 0:
+            raise ValueError(f"packed stereo width must be even for side_by_side split, got {w=}")
+        mid = w // 2
+        return frame[:, :mid, :], frame[:, mid:, :]
+    if m in ("top_bottom", "tb", "ud"):
+        if h % 2 != 0:
+            raise ValueError(f"packed stereo height must be even for top_bottom split, got {h=}")
+        mid = h // 2
+        return frame[:mid, :, :], frame[mid:, :, :]
+
+    raise ValueError(f"Unsupported packed stereo split mode: {mode!r}")

@@ -1,0 +1,775 @@
+==== lerobot-find-port --help ====
+Finding all available ports for the MotorsBus.
+Ports before disconnecting: ['COM5']
+Remove the USB cable from your MotorsBus and press Enter when done.
+Traceback (most recent call last):
+  File "C:\Users\Yeyian\miniconda3\envs\lerobot\lib\runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "C:\Users\Yeyian\miniconda3\envs\lerobot\lib\runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "C:\Users\Yeyian\miniconda3\envs\lerobot\Scripts\lerobot-find-port.exe\__main__.py", line 7, in <module>
+  File "C:\Users\Yeyian\lerobot\src\lerobot\scripts\lerobot_find_port.py", line 65, in main
+    find_port()
+  File "C:\Users\Yeyian\lerobot\src\lerobot\scripts\lerobot_find_port.py", line 59, in find_port
+    raise OSError(f"Could not detect the port. No difference was found ({ports_diff}).")
+OSError: Could not detect the port. No difference was found ([]).
+ 
+==== lerobot-setup-motors --help ====
+usage: lerobot-setup-motors [-h] [--config_path str] [--teleop str]
+                            [--teleop.type {koch_leader,so100_leader,so101_leader}]
+                            [--teleop.gripper_open_pos float]
+                            [--teleop.id [str]]
+                            [--teleop.calibration_dir [Path]]
+                            [--teleop.port str] [--teleop.use_degrees bool]
+                            [--robot str]
+                            [--robot.type {koch_follower,lekiwi,lekiwi_client,so100_follower,so101_follower}]
+                            [--robot.remote_ip str] [--robot.port_zmq_cmd int]
+                            [--robot.port_zmq_observations int]
+                            [--robot.teleop_keys Dict]
+                            [--robot.polling_timeout_ms int]
+                            [--robot.connect_timeout_s int] [--robot.id [str]]
+                            [--robot.calibration_dir [Path]]
+                            [--robot.port str]
+                            [--robot.disable_torque_on_disconnect bool]
+                            [--robot.max_relative_target [float|Dict]]
+                            [--robot.cameras Dict] [--robot.use_degrees bool]
+
+options:
+  -h, --help            show this help message and exit
+  --config_path str     Path for a config file to parse with draccus (default:
+                        None)
+  --teleop str          Config file for teleop (default: None)
+  --robot str           Config file for robot (default: None)
+
+SetupConfig:
+
+Optional ['teleop']:
+
+TeleoperatorConfig ['teleop']:
+
+  --teleop.type {koch_leader,so100_leader,so101_leader}
+                        Which type of TeleoperatorConfig ['teleop'] to use
+                        (default: None)
+
+KochLeaderConfig ['teleop']:
+
+  --teleop.id [str]     Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --teleop.port str     Port to connect to the arm (default: None)
+  --teleop.gripper_open_pos float
+                        Sets the arm in torque mode with the gripper motor set
+                        to this value. This makes it possible to squeeze the
+                        gripper and have it spring back to an open position on
+                        its own. (default: 50.0)
+
+SO100LeaderConfig ['teleop']:
+
+  --teleop.id [str]     Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --teleop.port str     Port to connect to the arm (default: None)
+
+SO101LeaderConfig ['teleop']:
+
+  --teleop.id [str]     Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --teleop.port str     Port to connect to the arm (default: None)
+  --teleop.use_degrees bool
+
+Optional ['robot']:
+
+RobotConfig ['robot']:
+
+  --robot.type {koch_follower,lekiwi,lekiwi_client,so100_follower,so101_follower}
+                        Which type of RobotConfig ['robot'] to use (default:
+                        None)
+
+KochFollowerConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.port str      Port to connect to the arm (default: None)
+  --robot.disable_torque_on_disconnect bool
+  --robot.max_relative_target [float|Dict]
+                        `max_relative_target` limits the magnitude of the
+                        relative positional target vector for safety purposes.
+                        Set this to a positive scalar to have the same value
+                        for all motors, or a dictionary that maps motor names
+                        to the max_relative_target value for that motor.
+                        (default: None)
+  --robot.cameras Dict  cameras (default: {})
+  --robot.use_degrees bool
+                        Set to `True` for backward compatibility with previous
+                        policies/dataset (default: False)
+
+LeKiwiConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.port str      port to connect to the bus (default: /dev/ttyACM0)
+  --robot.disable_torque_on_disconnect bool
+  --robot.max_relative_target [float|Dict]
+                        `max_relative_target` limits the magnitude of the
+                        relative positional target vector for safety purposes.
+                        Set this to a positive scalar to have the same value
+                        for all motors, or a dictionary that maps motor names
+                        to the max_relative_target value for that motor.
+                        (default: None)
+  --robot.cameras Dict  
+  --robot.use_degrees bool
+                        Set to `True` for backward compatibility with previous
+                        policies/dataset (default: False)
+
+LeKiwiClientConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.remote_ip str
+                        Network Configuration (default: None)
+  --robot.port_zmq_cmd int
+  --robot.port_zmq_observations int
+  --robot.teleop_keys Dict
+  --robot.cameras Dict  
+  --robot.polling_timeout_ms int
+  --robot.connect_timeout_s int
+
+SO100FollowerConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.port str      Port to connect to the arm (default: None)
+  --robot.disable_torque_on_disconnect bool
+  --robot.max_relative_target [float|Dict]
+                        `max_relative_target` limits the magnitude of the
+                        relative positional target vector for safety purposes.
+                        Set this to a positive scalar to have the same value
+                        for all motors, or a dictionary that maps motor names
+                        to the max_relative_target value for that motor.
+                        (default: None)
+  --robot.cameras Dict  cameras (default: {})
+  --robot.use_degrees bool
+                        Set to `True` for backward compatibility with previous
+                        policies/dataset (default: False)
+
+SO101FollowerConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.port str      Port to connect to the arm (default: None)
+  --robot.disable_torque_on_disconnect bool
+  --robot.max_relative_target [float|Dict]
+                        `max_relative_target` limits the magnitude of the
+                        relative positional target vector for safety purposes.
+                        Set this to a positive scalar to have the same value
+                        for all motors, or a dictionary that maps motor names
+                        to the max_relative_target value for that motor.
+                        (default: None)
+  --robot.cameras Dict  cameras (default: {})
+  --robot.use_degrees bool
+                        Set to `True` for backward compatibility with previous
+                        policies/dataset (default: False)
+ 
+==== lerobot-calibrate --help ====
+usage: lerobot-calibrate [-h] [--config_path str] [--teleop str]
+                         [--teleop.type {homunculus_glove,homunculus_arm,koch_leader,so100_leader,so101_leader}]
+                         [--teleop.side str] [--teleop.baud_rate int]
+                         [--teleop.gripper_open_pos float] [--teleop.id [str]]
+                         [--teleop.calibration_dir [Path]] [--teleop.port str]
+                         [--teleop.use_degrees bool] [--robot str]
+                         [--robot.type {hope_jr_hand,hope_jr_arm,koch_follower,lekiwi,lekiwi_client,so100_follower,so101_follower}]
+                         [--robot.side str] [--robot.remote_ip str]
+                         [--robot.port_zmq_cmd int]
+                         [--robot.port_zmq_observations int]
+                         [--robot.teleop_keys Dict]
+                         [--robot.polling_timeout_ms int]
+                         [--robot.connect_timeout_s int] [--robot.id [str]]
+                         [--robot.calibration_dir [Path]] [--robot.port str]
+                         [--robot.disable_torque_on_disconnect bool]
+                         [--robot.max_relative_target [float|Dict]]
+                         [--robot.cameras Dict] [--robot.use_degrees bool]
+
+options:
+  -h, --help            show this help message and exit
+  --config_path str     Path for a config file to parse with draccus (default:
+                        None)
+  --teleop str          Config file for teleop (default: None)
+  --robot str           Config file for robot (default: None)
+
+CalibrateConfig:
+
+Optional ['teleop']:
+
+TeleoperatorConfig ['teleop']:
+
+  --teleop.type {homunculus_glove,homunculus_arm,koch_leader,so100_leader,so101_leader}
+                        Which type of TeleoperatorConfig ['teleop'] to use
+                        (default: None)
+
+HomunculusGloveConfig ['teleop']:
+
+  --teleop.id [str]     Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --teleop.port str     Port to connect to the glove (default: None)
+  --teleop.side str     "left" / "right" (default: None)
+  --teleop.baud_rate int
+
+HomunculusArmConfig ['teleop']:
+
+  --teleop.id [str]     Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --teleop.port str     Port to connect to the arm (default: None)
+  --teleop.baud_rate int
+
+KochLeaderConfig ['teleop']:
+
+  --teleop.id [str]     Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --teleop.port str     Port to connect to the arm (default: None)
+  --teleop.gripper_open_pos float
+                        Sets the arm in torque mode with the gripper motor set
+                        to this value. This makes it possible to squeeze the
+                        gripper and have it spring back to an open position on
+                        its own. (default: 50.0)
+
+SO100LeaderConfig ['teleop']:
+
+  --teleop.id [str]     Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --teleop.port str     Port to connect to the arm (default: None)
+
+SO101LeaderConfig ['teleop']:
+
+  --teleop.id [str]     Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --teleop.port str     Port to connect to the arm (default: None)
+  --teleop.use_degrees bool
+
+Optional ['robot']:
+
+RobotConfig ['robot']:
+
+  --robot.type {hope_jr_hand,hope_jr_arm,koch_follower,lekiwi,lekiwi_client,so100_follower,so101_follower}
+                        Which type of RobotConfig ['robot'] to use (default:
+                        None)
+
+HopeJrHandConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.port str      Port to connect to the hand (default: None)
+  --robot.side str      "left" / "right" (default: None)
+  --robot.disable_torque_on_disconnect bool
+  --robot.cameras Dict  
+
+HopeJrArmConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.port str      Port to connect to the hand (default: None)
+  --robot.disable_torque_on_disconnect bool
+  --robot.max_relative_target [float|Dict]
+                        `max_relative_target` limits the magnitude of the
+                        relative positional target vector for safety purposes.
+                        Set this to a positive scalar to have the same value
+                        for all motors, or a dictionary that maps motor names
+                        to the max_relative_target value for that motor.
+                        (default: None)
+  --robot.cameras Dict  
+
+KochFollowerConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.port str      Port to connect to the arm (default: None)
+  --robot.disable_torque_on_disconnect bool
+  --robot.max_relative_target [float|Dict]
+                        `max_relative_target` limits the magnitude of the
+                        relative positional target vector for safety purposes.
+                        Set this to a positive scalar to have the same value
+                        for all motors, or a dictionary that maps motor names
+                        to the max_relative_target value for that motor.
+                        (default: None)
+  --robot.cameras Dict  cameras (default: {})
+  --robot.use_degrees bool
+                        Set to `True` for backward compatibility with previous
+                        policies/dataset (default: False)
+
+LeKiwiConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.port str      port to connect to the bus (default: /dev/ttyACM0)
+  --robot.disable_torque_on_disconnect bool
+  --robot.max_relative_target [float|Dict]
+                        `max_relative_target` limits the magnitude of the
+                        relative positional target vector for safety purposes.
+                        Set this to a positive scalar to have the same value
+                        for all motors, or a dictionary that maps motor names
+                        to the max_relative_target value for that motor.
+                        (default: None)
+  --robot.cameras Dict  
+  --robot.use_degrees bool
+                        Set to `True` for backward compatibility with previous
+                        policies/dataset (default: False)
+
+LeKiwiClientConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.remote_ip str
+                        Network Configuration (default: None)
+  --robot.port_zmq_cmd int
+  --robot.port_zmq_observations int
+  --robot.teleop_keys Dict
+  --robot.cameras Dict  
+  --robot.polling_timeout_ms int
+  --robot.connect_timeout_s int
+
+SO100FollowerConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.port str      Port to connect to the arm (default: None)
+  --robot.disable_torque_on_disconnect bool
+  --robot.max_relative_target [float|Dict]
+                        `max_relative_target` limits the magnitude of the
+                        relative positional target vector for safety purposes.
+                        Set this to a positive scalar to have the same value
+                        for all motors, or a dictionary that maps motor names
+                        to the max_relative_target value for that motor.
+                        (default: None)
+  --robot.cameras Dict  cameras (default: {})
+  --robot.use_degrees bool
+                        Set to `True` for backward compatibility with previous
+                        policies/dataset (default: False)
+
+SO101FollowerConfig ['robot']:
+
+  --robot.id [str]      Allows to distinguish between different robots of the
+                        same type (default: None)
+  --robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --robot.port str      Port to connect to the arm (default: None)
+  --robot.disable_torque_on_disconnect bool
+  --robot.max_relative_target [float|Dict]
+                        `max_relative_target` limits the magnitude of the
+                        relative positional target vector for safety purposes.
+                        Set this to a positive scalar to have the same value
+                        for all motors, or a dictionary that maps motor names
+                        to the max_relative_target value for that motor.
+                        (default: None)
+  --robot.cameras Dict  cameras (default: {})
+  --robot.use_degrees bool
+                        Set to `True` for backward compatibility with previous
+                        policies/dataset (default: False)
+ 
+==== python -m lerobot.teleoperate --help ====
+C:\Users\Yeyian\miniconda3\envs\lerobot\python.exe: No module named lerobot.teleoperate
+ 
+==== python -m lerobot.record --help ====
+C:\Users\Yeyian\miniconda3\envs\lerobot\python.exe: No module named lerobot.record
+ 
+==== python -m lerobot.find_port --help ====
+C:\Users\Yeyian\miniconda3\envs\lerobot\python.exe: No module named lerobot.find_port
+ 
+==== python -m lerobot.find_cameras --help ====
+C:\Users\Yeyian\miniconda3\envs\lerobot\python.exe: No module named lerobot.find_cameras
+ 
+==== python -m lerobot.scripts.visualize_dataset --help ====
+C:\Users\Yeyian\miniconda3\envs\lerobot\python.exe: No module named lerobot.scripts.visualize_dataset
+ 
+==== python -m lerobot.scripts.train --help ====
+C:\Users\Yeyian\miniconda3\envs\lerobot\python.exe: No module named lerobot.scripts.train
+ 
+==== python -m lerobot.rl.gym_manipulator --help ====
+usage: gym_manipulator.py [-h] [--config_path str] [--env str]
+                          [--env.type {aloha,pusht,gym_manipulator,libero,metaworld}]
+                          [--env.visualization_width int]
+                          [--env.visualization_height int] [--robot str]
+                          [--env.robot.type {so100_follower}]
+                          [--env.robot.id [str]]
+                          [--env.robot.calibration_dir [Path]]
+                          [--env.robot.port str]
+                          [--env.robot.disable_torque_on_disconnect bool]
+                          [--env.robot.max_relative_target [float|Dict]]
+                          [--env.robot.cameras Dict]
+                          [--env.robot.use_degrees bool] [--teleop str]
+                          [--env.teleop.type {gamepad,keyboard,keyboard_ee,keyboard_rover,so101_leader}]
+                          [--env.teleop.use_gripper bool]
+                          [--env.teleop.linear_speed float]
+                          [--env.teleop.angular_speed float]
+                          [--env.teleop.speed_increment float]
+                          [--env.teleop.turn_assist_ratio float]
+                          [--env.teleop.angular_speed_ratio float]
+                          [--env.teleop.min_linear_speed float]
+                          [--env.teleop.min_angular_speed float]
+                          [--env.teleop.id [str]]
+                          [--env.teleop.calibration_dir [Path]]
+                          [--env.teleop.port str]
+                          [--env.teleop.use_degrees bool] [--processor str]
+                          [--env.processor.control_mode str]
+                          [--observation str]
+                          [--env.processor.observation.add_joint_velocity_to_observation bool]
+                          [--env.processor.observation.add_current_to_observation bool]
+                          [--env.processor.observation.display_cameras bool]
+                          [--image_preprocessing str]
+                          [--env.processor.image_preprocessing.crop_params_dict [Dict]]
+                          [--env.processor.image_preprocessing.resize_size [int int]]
+                          [--gripper str]
+                          [--env.processor.gripper.use_gripper bool]
+                          [--env.processor.gripper.gripper_penalty float]
+                          [--reset str]
+                          [--env.processor.reset.fixed_reset_joint_positions [Any]]
+                          [--env.processor.reset.reset_time_s float]
+                          [--env.processor.reset.control_time_s float]
+                          [--env.processor.reset.terminate_on_success bool]
+                          [--inverse_kinematics str]
+                          [--env.processor.inverse_kinematics.urdf_path [str]]
+                          [--env.processor.inverse_kinematics.target_frame_name [str]]
+                          [--env.processor.inverse_kinematics.end_effector_bounds [Dict]]
+                          [--env.processor.inverse_kinematics.end_effector_step_sizes [Dict]]
+                          [--reward_classifier str]
+                          [--env.processor.reward_classifier.pretrained_path [str]]
+                          [--env.processor.reward_classifier.success_threshold float]
+                          [--env.processor.reward_classifier.success_reward float]
+                          [--env.processor.max_gripper_pos [float]]
+                          [--env.name str] [--env.camera_name str]
+                          [--env.init_states bool]
+                          [--env.camera_name_mapping [Dict]]
+                          [--env.observation_height int]
+                          [--env.observation_width int]
+                          [--env.control_mode str] [--env.task str]
+                          [--env.fps int] [--env.features Dict]
+                          [--env.features_map Dict]
+                          [--env.max_parallel_tasks int]
+                          [--env.disable_env_checker bool]
+                          [--env.episode_length int] [--env.obs_type str]
+                          [--env.render_mode str] [--env.multitask_eval bool]
+                          [--dataset str] [--dataset.repo_id str]
+                          [--dataset.task str] [--dataset.root [str]]
+                          [--dataset.num_episodes_to_record int]
+                          [--dataset.replay_episode [int]]
+                          [--dataset.push_to_hub bool] [--mode [str]]
+                          [--device str]
+
+options:
+  -h, --help            show this help message and exit
+  --config_path str     Path for a config file to parse with draccus (default:
+                        None)
+  --env str             Config file for env (default: None)
+  --robot str           Config file for robot (default: None)
+  --teleop str          Config file for teleop (default: None)
+  --processor str       Config file for processor (default: None)
+  --observation str     Config file for observation (default: None)
+  --image_preprocessing str
+                        Config file for image_preprocessing (default: None)
+  --gripper str         Config file for gripper (default: None)
+  --reset str           Config file for reset (default: None)
+  --inverse_kinematics str
+                        Config file for inverse_kinematics (default: None)
+  --reward_classifier str
+                        Config file for reward_classifier (default: None)
+  --dataset str         Config file for dataset (default: None)
+
+GymManipulatorConfig:
+  Main configuration for gym manipulator environment.
+
+  --mode [str]          Either "record", "replay", None (default: None)
+  --device str          
+
+HILSerlRobotEnvConfig ['env']:
+  Configuration for the HILSerlRobotEnv environment.
+
+  --env.type {aloha,pusht,gym_manipulator,libero,metaworld}
+                        Which type of HILSerlRobotEnvConfig ['env'] to use
+                        (default: None)
+
+AlohaEnv ['env']:
+
+  --env.task [str]      
+  --env.fps int         
+  --env.features Dict   
+  --env.features_map Dict
+  --env.max_parallel_tasks int
+  --env.disable_env_checker bool
+  --env.episode_length int
+  --env.obs_type str    
+  --env.observation_height int
+  --env.observation_width int
+  --env.render_mode str
+
+PushtEnv ['env']:
+
+  --env.task [str]      
+  --env.fps int         
+  --env.features Dict   
+  --env.features_map Dict
+  --env.max_parallel_tasks int
+  --env.disable_env_checker bool
+  --env.episode_length int
+  --env.obs_type str    
+  --env.render_mode str
+  --env.visualization_width int
+  --env.visualization_height int
+  --env.observation_height int
+  --env.observation_width int
+
+HILSerlRobotEnvConfig ['env']:
+  Configuration for the HILSerlRobotEnv environment.
+
+  --env.task [str]
+  --env.fps int         
+  --env.features Dict   
+  --env.features_map Dict
+  --env.max_parallel_tasks int
+  --env.disable_env_checker bool
+  --env.name str        
+
+Optional ['env.robot']:
+
+RobotConfig ['env.robot']:
+
+  --env.robot.type {so100_follower}
+                        Which type of RobotConfig ['env.robot'] to use
+                        (default: None)
+
+SO100FollowerConfig ['env.robot']:
+
+  --env.robot.id [str]  Allows to distinguish between different robots of the
+                        same type (default: None)
+  --env.robot.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --env.robot.port str  Port to connect to the arm (default: None)
+  --env.robot.disable_torque_on_disconnect bool
+  --env.robot.max_relative_target [float|Dict]
+                        `max_relative_target` limits the magnitude of the
+                        relative positional target vector for safety purposes.
+                        Set this to a positive scalar to have the same value
+                        for all motors, or a dictionary that maps motor names
+                        to the max_relative_target value for that motor.
+                        (default: None)
+  --env.robot.cameras Dict
+                        cameras (default: {})
+  --env.robot.use_degrees bool
+                        Set to `True` for backward compatibility with previous
+                        policies/dataset (default: False)
+
+Optional ['env.teleop']:
+
+TeleoperatorConfig ['env.teleop']:
+
+  --env.teleop.type {gamepad,keyboard,keyboard_ee,keyboard_rover,so101_leader}
+                        Which type of TeleoperatorConfig ['env.teleop'] to use
+                        (default: None)
+
+GamepadTeleopConfig ['env.teleop']:
+
+  --env.teleop.id [str]
+                        Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --env.teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --env.teleop.use_gripper bool
+
+KeyboardTeleopConfig ['env.teleop']:
+  KeyboardTeleopConfig
+
+  --env.teleop.id [str]
+                        Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --env.teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+
+KeyboardEndEffectorTeleopConfig ['env.teleop']:
+  Configuration for keyboard end-effector teleoperator.
+  
+      Used for controlling robot end-effectors with keyboard inputs.
+  
+      Attributes:
+          use_gripper: Whether to include gripper control in actions
+      
+
+  --env.teleop.id [str]
+                        Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --env.teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --env.teleop.use_gripper bool
+
+KeyboardRoverTeleopConfig ['env.teleop']:
+  Configuration for keyboard rover teleoperator.
+  
+      Used for controlling mobile robots like EarthRover Mini Plus with WASD controls.
+  
+      Attributes:
+          linear_speed: Default linear velocity magnitude (-1 to 1 range for SDK robots)
+          angular_speed: Default angular velocity magnitude (-1 to 1 range for SDK robots)
+          speed_increment: Amount to increase/decrease speed with +/- keys
+          turn_assist_ratio: Forward motion multiplier when turning with A/D keys (0.0-1.0)
+          angular_speed_ratio: Ratio of angular to linear speed for synchronized adjustments
+          min_linear_speed: Minimum linear speed when decreasing (prevents zero speed)
+          min_angular_speed: Minimum angular speed when decreasing (prevents zero speed)
+      
+
+  --env.teleop.id [str]
+                        Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --env.teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --env.teleop.linear_speed float
+  --env.teleop.angular_speed float
+  --env.teleop.speed_increment float
+  --env.teleop.turn_assist_ratio float
+  --env.teleop.angular_speed_ratio float
+  --env.teleop.min_linear_speed float
+  --env.teleop.min_angular_speed float
+
+SO101LeaderConfig ['env.teleop']:
+
+  --env.teleop.id [str]
+                        Allows to distinguish between different teleoperators
+                        of the same type (default: None)
+  --env.teleop.calibration_dir [Path]
+                        Directory to store calibration file (default: None)
+  --env.teleop.port str
+                        Port to connect to the arm (default: None)
+  --env.teleop.use_degrees bool
+
+HILSerlProcessorConfig ['env.processor']:
+  Configuration for environment processing pipeline.
+
+  --env.processor.control_mode str
+  --env.processor.max_gripper_pos [float]
+
+Optional ['env.processor.observation']:
+
+ObservationConfig ['env.processor.observation']:
+  Configuration for observation processing.
+
+  --env.processor.observation.add_joint_velocity_to_observation bool
+  --env.processor.observation.add_current_to_observation bool
+  --env.processor.observation.display_cameras bool
+
+Optional ['env.processor.image_preprocessing']:
+
+ImagePreprocessingConfig ['env.processor.image_preprocessing']:
+
+  --env.processor.image_preprocessing.crop_params_dict [Dict]
+  --env.processor.image_preprocessing.resize_size [int int]
+
+Optional ['env.processor.gripper']:
+
+GripperConfig ['env.processor.gripper']:
+  Configuration for gripper control and penalties.
+
+  --env.processor.gripper.use_gripper bool
+  --env.processor.gripper.gripper_penalty float
+
+Optional ['env.processor.reset']:
+
+ResetConfig ['env.processor.reset']:
+  Configuration for environment reset behavior.
+
+  --env.processor.reset.fixed_reset_joint_positions [Any]
+  --env.processor.reset.reset_time_s float
+  --env.processor.reset.control_time_s float
+  --env.processor.reset.terminate_on_success bool
+
+Optional ['env.processor.inverse_kinematics']:
+
+InverseKinematicsConfig ['env.processor.inverse_kinematics']:
+  Configuration for inverse kinematics processing.
+
+  --env.processor.inverse_kinematics.urdf_path [str]
+  --env.processor.inverse_kinematics.target_frame_name [str]
+  --env.processor.inverse_kinematics.end_effector_bounds [Dict]
+  --env.processor.inverse_kinematics.end_effector_step_sizes [Dict]
+
+Optional ['env.processor.reward_classifier']:
+
+RewardClassifierConfig ['env.processor.reward_classifier']:
+  Configuration for reward classification.
+
+  --env.processor.reward_classifier.pretrained_path [str]
+  --env.processor.reward_classifier.success_threshold float
+  --env.processor.reward_classifier.success_reward float
+
+LiberoEnv ['env']:
+
+  --env.task str        can also choose libero_spatial, libero_object, etc.
+                        (default: libero_10)
+  --env.fps int         
+  --env.features Dict   
+  --env.features_map Dict
+  --env.max_parallel_tasks int
+  --env.disable_env_checker bool
+  --env.episode_length [int]
+  --env.obs_type str    
+  --env.render_mode str
+  --env.camera_name str
+  --env.init_states bool
+  --env.camera_name_mapping [Dict]
+  --env.observation_height int
+  --env.observation_width int
+  --env.control_mode str
+                        or "absolute" (default: relative)
+
+MetaworldEnv ['env']:
+
+  --env.task str        add all tasks (default: metaworld-push-v2)
+  --env.fps int         
+  --env.features Dict   
+  --env.features_map Dict
+  --env.max_parallel_tasks int
+  --env.disable_env_checker bool
+  --env.episode_length int
+  --env.obs_type str    
+  --env.render_mode str
+  --env.multitask_eval bool
+
+DatasetConfig ['dataset']:
+  Configuration for dataset creation and management.
+
+  --dataset.repo_id str
+  --dataset.task str
+  --dataset.root [str]
+  --dataset.num_episodes_to_record int
+  --dataset.replay_episode [int]
+  --dataset.push_to_hub bool

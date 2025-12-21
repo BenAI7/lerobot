@@ -18,6 +18,7 @@ from typing import Any
 
 import numpy as np
 import rerun as rr
+import rerun.blueprint as rrb
 
 from .constants import OBS_PREFIX, OBS_STR
 
@@ -27,6 +28,11 @@ def init_rerun(session_name: str = "lerobot_control_loop") -> None:
     batch_size = os.getenv("RERUN_FLUSH_NUM_BYTES", "8000")
     os.environ["RERUN_FLUSH_NUM_BYTES"] = batch_size
     rr.init(session_name)
+    # Reset blueprint/layout so stale views from previous runs (e.g. an old "front" camera panel)
+    # don't stick around as empty/black viewports.
+    rr.send_blueprint(rrb.Blueprint(auto_layout=True, auto_views=True), make_default=True)
+    # Clear any entities from previous runs of the same session name.
+    rr.log("/", rr.Clear(recursive=True))
     memory_limit = os.getenv("LEROBOT_RERUN_MEMORY_LIMIT", "10%")
     rr.spawn(memory_limit=memory_limit)
 

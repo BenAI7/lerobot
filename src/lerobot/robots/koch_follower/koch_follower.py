@@ -19,7 +19,8 @@ import time
 from functools import cached_property
 from typing import Any
 
-from lerobot.cameras.utils import make_cameras_from_configs
+from lerobot.cameras.utils import make_cameras_from_configs, packed_stereo_split_shapes, split_packed_stereo_frame
+from lerobot.cameras.opencv.configuration_opencv import OpenCVCameraConfig
 from lerobot.motors import Motor, MotorCalibration, MotorNormMode
 from lerobot.motors.dynamixel import (
     DynamixelMotorsBus,
@@ -68,9 +69,26 @@ class KochFollower(Robot):
 
     @property
     def _cameras_ft(self) -> dict[str, tuple]:
-        return {
-            cam: (self.config.cameras[cam].height, self.config.cameras[cam].width, 3) for cam in self.cameras
-        }
+        features: dict[str, tuple] = {}
+        for cam_key in self.cameras:
+            cfg = self.config.cameras[cam_key]
+
+            if not isinstance(cfg, OpenCVCameraConfig) or cfg.split_mode is None:
+                features[cam_key] = (cfg.height, cfg.width, 3)
+                continue
+
+            if cfg.height is None or cfg.width is None:
+                raise ValueError(
+                    f"Packed stereo camera '{cam_key}' requires explicit width/height in config (e.g. 640x240)."
+                )
+
+            left_shape, right_shape = packed_stereo_split_shapes(cfg.height, cfg.width, cfg.split_mode)
+            features[f"{cam_key}_left"] = left_shape
+            features[f"{cam_key}_right"] = right_shape
+            if cfg.split_include_packed:
+                features[cam_key] = (cfg.height, cfg.width, 3)
+
+        return features
 
     @cached_property
     def observation_features(self) -> dict[str, type | tuple]:
@@ -196,7 +214,17 @@ class KochFollower(Robot):
         # Capture images from cameras
         for cam_key, cam in self.cameras.items():
             start = time.perf_counter()
-            obs_dict[cam_key] = cam.async_read()
+            frame = cam.async_read()
+            cfg = self.config.cameras[cam_key]
+
+            if isinstance(cfg, OpenCVCameraConfig) and cfg.split_mode is not None:
+                left, right = split_packed_stereo_frame(frame, cfg.split_mode)
+                obs_dict[f"{cam_key}_left"] = left
+                obs_dict[f"{cam_key}_right"] = right
+                if cfg.split_include_packed:
+                    obs_dict[cam_key] = frame
+            else:
+                obs_dict[cam_key] = frame
             dt_ms = (time.perf_counter() - start) * 1e3
             logger.debug(f"{self} read {cam_key}: {dt_ms:.1f}ms")
 

@@ -382,6 +382,12 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
 
     teleop_action_processor, robot_action_processor, robot_observation_processor = make_default_processors()
 
+    # Connect early so cameras can negotiate their *actual* output sizes/FPS.
+    # This ensures dataset feature shapes match what the hardware really delivers.
+    robot.connect()
+    if teleop is not None:
+        teleop.connect()
+
     dataset_features = combine_feature_dicts(
         aggregate_pipeline_dataset_features(
             pipeline=teleop_action_processor,
@@ -404,10 +410,13 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
             batch_encoding_size=cfg.dataset.video_encoding_batch_size,
         )
 
-        if hasattr(robot, "cameras") and len(robot.cameras) > 0:
+        # Use number of image streams rather than number of physical camera devices.
+        # This matters for packed-stereo cameras that expand into left/right streams.
+        num_image_streams = len([k for k, v in robot.observation_features.items() if isinstance(v, tuple)])
+        if num_image_streams > 0:
             dataset.start_image_writer(
                 num_processes=cfg.dataset.num_image_writer_processes,
-                num_threads=cfg.dataset.num_image_writer_threads_per_camera * len(robot.cameras),
+                num_threads=cfg.dataset.num_image_writer_threads_per_camera * num_image_streams,
             )
         sanity_check_dataset_robot_compatibility(dataset, robot, cfg.dataset.fps, dataset_features)
     else:
@@ -421,7 +430,9 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
             features=dataset_features,
             use_videos=cfg.dataset.video,
             image_writer_processes=cfg.dataset.num_image_writer_processes,
-            image_writer_threads=cfg.dataset.num_image_writer_threads_per_camera * len(robot.cameras),
+            image_writer_threads=cfg.dataset.num_image_writer_threads_per_camera * len(
+                [k for k, v in robot.observation_features.items() if isinstance(v, tuple)]
+            ),
             batch_encoding_size=cfg.dataset.video_encoding_batch_size,
         )
 
@@ -439,10 +450,7 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
                 "rename_observations_processor": {"rename_map": cfg.dataset.rename_map},
             },
         )
-
-    robot.connect()
-    if teleop is not None:
-        teleop.connect()
+    # Already connected above.
 
     listener, events = init_keyboard_listener()
 
