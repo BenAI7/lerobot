@@ -64,6 +64,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from pprint import pformat
 from typing import Any
+import json
 
 from lerobot.cameras import (  # noqa: F401
     CameraConfig,  # noqa: F401
@@ -167,6 +168,12 @@ class DatasetRecordConfig:
     video_encoding_batch_size: int = 1
     # Rename map for the observation to override the image and state keys
     rename_map: dict[str, str] = field(default_factory=dict)
+    # Prompt the user to label each recorded episode as success/failure (useful for real-robot eval loops).
+    # Labels are written to `meta/episode_success.jsonl` inside the dataset directory.
+    prompt_success_label: bool = False
+    # If True and `prompt_success_label=True`, discard the episode buffer when the user marks failure.
+    # This is useful for "keep only good self-generated rollouts" loops.
+    discard_episode_on_failure: bool = False
 
     def __post_init__(self):
         if self.single_task is None:
@@ -500,6 +507,39 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
                 events["exit_early"] = False
                 dataset.clear_episode_buffer()
                 continue
+
+            # Optional: prompt for a binary success label and store it alongside the dataset.
+            if cfg.dataset.prompt_success_label:
+                while True:
+                    ans = input("Episode result? [y]=success / [n]=failure: ").strip().lower()
+                    if ans in ("y", "yes", "1"):
+                        is_success = True
+                        break
+                    if ans in ("n", "no", "0"):
+                        is_success = False
+                        break
+                    print("Please type y or n.")
+
+                meta_dir = Path(dataset.root) / "meta"
+                meta_dir.mkdir(parents=True, exist_ok=True)
+                success_path = meta_dir / "episode_success.jsonl"
+                with open(success_path, "a", encoding="utf-8") as f:
+                    f.write(
+                        json.dumps(
+                            {
+                                "episode_index": int(dataset.num_episodes),
+                                "is_success": bool(is_success),
+                                "timestamp": time.time(),
+                            }
+                        )
+                        + "\n"
+                    )
+
+                if (not is_success) and cfg.dataset.discard_episode_on_failure:
+                    # Drop the episode without saving. Useful for filtering self-generated rollouts.
+                    dataset.clear_episode_buffer(delete_images=True)
+                    log_say("Discarded episode (marked failure).", cfg.play_sounds)
+                    continue
 
             dataset.save_episode()
             recorded_episodes += 1
