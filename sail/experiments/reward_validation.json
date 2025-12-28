@@ -1,0 +1,142 @@
+[
+  {
+    "episode": 0,
+    "vlm_success": true,
+    "vlm_confidence": 0.3393715023994446,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 2,
+    "vlm_success": true,
+    "vlm_confidence": 0.3511233627796173,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 5,
+    "vlm_success": true,
+    "vlm_confidence": 0.3661746680736542,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 7,
+    "vlm_success": true,
+    "vlm_confidence": 0.37950944900512695,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 10,
+    "vlm_success": true,
+    "vlm_confidence": 0.3641357421875,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 12,
+    "vlm_success": true,
+    "vlm_confidence": 0.3693585693836212,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 15,
+    "vlm_success": true,
+    "vlm_confidence": 0.34612175822257996,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 18,
+    "vlm_success": true,
+    "vlm_confidence": 0.34956830739974976,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 20,
+    "vlm_success": true,
+    "vlm_confidence": 0.376284122467041,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 23,
+    "vlm_success": true,
+    "vlm_confidence": 0.38030487298965454,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 25,
+    "vlm_success": true,
+    "vlm_confidence": 0.356945276260376,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 28,
+    "vlm_success": true,
+    "vlm_confidence": 0.3669361174106598,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 30,
+    "vlm_success": true,
+    "vlm_confidence": 0.34990760684013367,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 33,
+    "vlm_success": true,
+    "vlm_confidence": 0.37882721424102783,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 36,
+    "vlm_success": true,
+    "vlm_confidence": 0.36176982522010803,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 38,
+    "vlm_success": true,
+    "vlm_confidence": 0.3601614534854889,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 41,
+    "vlm_success": true,
+    "vlm_confidence": 0.35053202509880066,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 43,
+    "vlm_success": true,
+    "vlm_confidence": 0.36498603224754333,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 46,
+    "vlm_success": true,
+    "vlm_confidence": 0.3624098598957062,
+    "vip_progress": 1.0,
+    "human_label": true
+  },
+  {
+    "episode": 49,
+    "vlm_success": true,
+    "vlm_confidence": 0.3742043673992157,
+    "vip_progress": 1.0,
+    "human_label": true
+  }
+]
